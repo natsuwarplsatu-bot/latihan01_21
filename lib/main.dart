@@ -11,6 +11,10 @@ class Barang {
     return harga * stok;
   }
 
+  bool bisaDijual(int diminta){
+    return diminta <= stok;
+  }
+
   void tampilkan() {
     print("========================");
     print("KARTU BARANG");
@@ -24,10 +28,13 @@ class Barang {
 
 void main() {
   Barang barang1 = Barang("Buku Tulis", 3000, 20);
-  Barang barang2 = Barang("Pulpen", 2500, 15);
+  Barang barang2 = Barang("Pulpen", 2500, 15); 
   Barang barang3 = Barang("Roti", 5000, 10);
 
   barang1.tampilkan(); 
   barang2.tampilkan();
   barang3.tampilkan();
+
+  print("Buku Tulis diminta 5 : ${barang1.bisaDijual(5) ? "Bisa dijual" : "Tidak bisa dijual"}");
+  print("Pulpen diminta 10 : ${barang2.bisaDijual(10) ? "Bisa dijual" : "Tidak bisa dijual"}");
 }
