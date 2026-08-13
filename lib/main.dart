@@ -56,62 +56,112 @@ class BarangPromo extends Barang {
     return harga - (harga * persenDiskon / 100);
   }
 
+  @override
   void tampilkanPromo() {
     print("========================");
+    print("       PROMO");
     print("KARTU BARANG PROMO");
     print("Nama  : $nama");
     print("Harga Normal: Rp${harga.toStringAsFixed(0)}");
     print("Stok  : $_stok");
     print("Diskon : $persenDiskon%)");
     print("Harga Promo : Rp${hargaPromo().toStringAsFixed(0)}");
-    print("Nilai Stok : Rp${nilaiStok().toStringAsFixed(0)}");
     print("========================");
   }
 }
 
-class Pembeli {
-  String nama;
-  bool statusAnggota;
+class BarangGrosir extends Barang {
+  int minimalBeli;
 
-  Pembeli(this.nama, this.statusAnggota);
+  BarangGrosir(
+    String nama, 
+    double harga, 
+    int stok,
+    this.minimalBeli,
+  ) : super(nama, harga, stok);
+
+  double hargaGrosir(int jumlah) {
+    if (jumlah >= minimalBeli) {
+      return harga *0.9;
+    }
+    return harga;
+  }
+
+  @override 
   void tampilkan() {
-    print("Nama Pembeli : $nama");
-    print("Status Anggota : ${statusAnggota ? "Anggota" : "Umum"}");
+      print("========================");    
+      print("       BARANG GROSIR");
+      print("Nama       : $nama");
+      print("Harga      : Rp${harga.toStringAsFixed(0)}");
+      print("Minimal Beli : $minimalBeli");
+      print("Stok       : $stok");
+      print("========================");    
   }
 }
-
 
 void main() {
   Barang barang1 = Barang("Buku Tulis", 3000, 20);
 
-  print("=== STOK AWAL ===");
+  void prosesBeli(String inputJumlah) {
+    try {
+      int jumlah = int.parse(inputJumlah);
+
+      if (barang1.jual(jumlah)) {
+        print("Pembelian berhasil.");
+        print("Jumlah dibeli: $jumlah");
+        print("Sisa stok: ${barang1.stok}");
+      } else {
+        print("Stok tidak mencukupi.");
+      }
+    } catch (e) {
+      print("Input tidak valid. silahkan masukkan angka.");
+    } finally {
+      print("Transaksi dicatat di log.");
+    }
+  }
+  BarangPromo barangPromo = BarangPromo(
+    "Pensil",
+    2000,
+    30,
+    10,
+  );
+
+  BarangGrosir barangGrosir = BarangGrosir(
+    "Pulpen",
+    2500,
+    100,
+    10,
+  );
+
+  print("=== BARANG BIASA ===");
   barang1.tampilkan();
 
-  print("\n=== PENJUALAN 5 BUKU ===");
+  print("\n=== BARANG PROMO ===");
+  barangPromo.tampilkan();
 
-  if (barang1.jual(5)) {
-    print("Penjualan Berhasil");
-  } else {
-    print("Penjualan gagal, Stok tidak mencukupi");
-  }
+  print("\n=== BARANG GROSIR ===");
+  barangGrosir.tampilkan();
 
-  print ("Stok sekarang: ${barang1.stok}");
-   
-  print("\n=== PENJUALAN 20 BUKU ===");
+  print(
+    "Harga grosir 10 pulpen: "
+    "Rp${barangGrosir.hargaGrosir(10).toStringAsFixed(0)}",
+  );
+ // Uji serangan:
+// barang1._stok = 100;
+// _stok tidak seharusnya diubah langsung.
+// Perubahan stok dilakukan melalui method jual().
+  print("\n=== UJI STOK ===");
+  print("Stok sebelum dijual: ${barang1.stok}");
 
-  if (barang1.jual(20)) {
-    print("Penjualan berhasil.");
-  } else{
-    print("Penjualan gagal, stok tidak mencukupi");
-  } 
+  barang1.jual(5);
 
-  print("Stok sekarang: ${barang1.stok}");
+  print("Stok setelah dijual 5: ${barang1.stok}");
+
+  print("\n=== PROSES PEMBELIAN ===");
+  prosesBeli("2");
+  prosesBeli("dua");
 }
- /*
-Mengapa melindungi _stok penting bagi integritas data koperasi?
-
-Melindungi _stok penting agar jumlah stok tidak dapat diubah
-sembarangan dari luar class. Dengan enkapsulasi, stok hanya dapat
-berubah melalui method jual() yang mengecek ketersediaan terlebih
-dahulu, sehingga data stok tetap akurat dan sesuai dengan transaksi.
-*/
+  // Penanganan error meningkatkan kepercayaan pengurus karena
+  // program tidak langsung berhenti saat terjadi kesalahan input.
+  // Program memberikan pesan yang jelas kepada petugas dan tetap
+  // berjalan sehingga transaksi lebih aman dan tidak mudah gagal.
