@@ -8,12 +8,11 @@ class Barang {
 
   Barang(this.nama, this.harga, this._stok);
 
-  int get stok{
+  int get stok {
     return _stok;
   }
 
-
-  bool bisaDijual(int diminta){
+  bool bisaDijual(int diminta) {
     return diminta <= _stok;
   }
 
@@ -25,7 +24,6 @@ class Barang {
       return false;
     }
   }
-
 
   double nilaiStok() {
     return harga * _stok;
@@ -57,14 +55,14 @@ class BarangPromo extends Barang {
   }
 
   @override
-  void tampilkanPromo() {
+  void tampilkan() {
     print("========================");
     print("       PROMO");
     print("KARTU BARANG PROMO");
     print("Nama  : $nama");
-    print("Harga Normal: Rp${harga.toStringAsFixed(0)}");
-    print("Stok  : $_stok");
-    print("Diskon : $persenDiskon%)");
+    print("Harga Normal : Rp${harga.toStringAsFixed(0)}");
+    print("Stok  : $stok");
+    print("Diskon : $persenDiskon%");
     print("Harga Promo : Rp${hargaPromo().toStringAsFixed(0)}");
     print("========================");
   }
@@ -74,51 +72,111 @@ class BarangGrosir extends Barang {
   int minimalBeli;
 
   BarangGrosir(
-    String nama, 
-    double harga, 
+    String nama,
+    double harga,
     int stok,
     this.minimalBeli,
   ) : super(nama, harga, stok);
 
   double hargaGrosir(int jumlah) {
     if (jumlah >= minimalBeli) {
-      return harga *0.9;
+      return harga * 0.9;
     }
+
     return harga;
   }
 
-  @override 
+  @override
   void tampilkan() {
-      print("========================");    
-      print("       BARANG GROSIR");
-      print("Nama       : $nama");
-      print("Harga      : Rp${harga.toStringAsFixed(0)}");
-      print("Minimal Beli : $minimalBeli");
-      print("Stok       : $stok");
-      print("========================");    
+    print("========================");
+    print("       BARANG GROSIR");
+    print("Nama         : $nama");
+    print("Harga        : Rp${harga.toStringAsFixed(0)}");
+    print("Minimal Beli : $minimalBeli");
+    print("Stok         : $stok");
+    print("========================");
   }
 }
 
-void main() {
-  Barang barang1 = Barang("Buku Tulis", 3000, 20);
+Future<void> muatLaporan() async {
+  print("Menyiapkan laporan...");
+  await Future.delayed(Duration(seconds: 1));
+  print("Laporan siap!");
+}
 
-  void prosesBeli(String inputJumlah) {
-    try {
-      int jumlah = int.parse(inputJumlah);
-
-      if (barang1.jual(jumlah)) {
-        print("Pembelian berhasil.");
-        print("Jumlah dibeli: $jumlah");
-        print("Sisa stok: ${barang1.stok}");
-      } else {
-        print("Stok tidak mencukupi.");
-      }
-    } catch (e) {
-      print("Input tidak valid. silahkan masukkan angka.");
-    } finally {
-      print("Transaksi dicatat di log.");
-    }
+double hitungPotongan(double total) {
+  if (total > 200000) {
+    return 10;
+  } else if (total > 100000) {
+    return 5;
   }
+
+  return 0;
+}
+
+double hitungHargaAkhir(double total, double persenPotongan) {
+  return total - (total * persenPotongan / 100);
+}
+
+void prosesBeli(
+  Barang barang,
+  String inputJumlah,
+  bool anggota,
+) {
+  try {
+    int jumlah = int.parse(inputJumlah);
+
+    if (jumlah <= 0) {
+      print("Jumlah pembelian harus lebih dari 0.");
+      return;
+    }
+
+    if (!barang.bisaDijual(jumlah)) {
+      print("Stok tidak mencukupi.");
+      return;
+    }
+
+    double harga = barang.harga;
+
+    if (anggota) {
+      harga = harga * 0.95;
+    }
+
+    double total = harga * jumlah;
+    double persenPotongan = hitungPotongan(total);
+    double hargaAkhir = hitungHargaAkhir(
+      total,
+      persenPotongan,
+    );
+
+    if (barang.jual(jumlah)) {
+      print("Pembelian berhasil.");
+      print("Nama barang    : ${barang.nama}");
+      print("Status pembeli : ${anggota ? "Anggota" : "Umum"}");
+      print("Jumlah dibeli  : $jumlah");
+      print("Harga satuan   : Rp${harga.toStringAsFixed(0)}");
+      print("Total          : Rp${total.toStringAsFixed(0)}");
+      print("Potongan       : $persenPotongan%");
+      print("Harga akhir    : Rp${hargaAkhir.toStringAsFixed(0)}");
+      print("Sisa stok      : ${barang.stok}");
+    }
+  } catch (e) {
+    print(
+      "Input '$inputJumlah' bukan angka. "
+      "Silakan masukkan jumlah dalam angka.",
+    );
+  } finally {
+    print("Transaksi dicatat di log.");
+  }
+}
+
+Future<void> main() async {
+  Barang barang1 = Barang(
+    "Buku Tulis",
+    3000,
+    20,
+  );
+
   BarangPromo barangPromo = BarangPromo(
     "Pensil",
     2000,
@@ -133,7 +191,10 @@ void main() {
     10,
   );
 
-  print("=== BARANG BIASA ===");
+  print("=== LAPORAN KOPERASI ===");
+  await muatLaporan();
+
+  print("\n=== BARANG BIASA ===");
   barang1.tampilkan();
 
   print("\n=== BARANG PROMO ===");
@@ -146,10 +207,7 @@ void main() {
     "Harga grosir 10 pulpen: "
     "Rp${barangGrosir.hargaGrosir(10).toStringAsFixed(0)}",
   );
- // Uji serangan:
-// barang1._stok = 100;
-// _stok tidak seharusnya diubah langsung.
-// Perubahan stok dilakukan melalui method jual().
+
   print("\n=== UJI STOK ===");
   print("Stok sebelum dijual: ${barang1.stok}");
 
@@ -158,10 +216,16 @@ void main() {
   print("Stok setelah dijual 5: ${barang1.stok}");
 
   print("\n=== PROSES PEMBELIAN ===");
-  prosesBeli("2");
-  prosesBeli("dua");
+
+  prosesBeli(
+    barang1,
+    "2",
+    true,
+  );
+
+  prosesBeli(
+    barang1,
+    "dua",
+    true,
+  );
 }
-  // Penanganan error meningkatkan kepercayaan pengurus karena
-  // program tidak langsung berhenti saat terjadi kesalahan input.
-  // Program memberikan pesan yang jelas kepada petugas dan tetap
-  // berjalan sehingga transaksi lebih aman dan tidak mudah gagal.
